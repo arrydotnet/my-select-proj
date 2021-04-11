@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-
+import { deepClone } from '../shared/utility';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -7,175 +7,83 @@ import { Component, OnInit } from '@angular/core';
 })
 export class AppComponent implements OnInit {
   title = 'my-select-proj';
-  public dataArr = new DataArr();
+  //public dataArr = new DataArr();
+  public columnDataArr: Map<Number, Array<DataItem>>;
+  public mainArr: Array<Number> = [];
+  readonly columnCount: number = 4;
+  public preSelValue: Array<string> = [];
   ngOnInit(): void {
     this.loadData();
   }
   loadData() {
-    var arr = new Array<string>("-Select-", "India", "USA", "JAPAN", "UK", "RUSSIA", "CANADA");
-    for (let index = 0; index < arr.length; index++) {
-      const countryName = arr[index];
+    this.mainArr = [];
+    //var arrCountry = new Array<string>("-Select-", "India", "USA", "JAPAN", "UK", "RUSSIA", "CANADA");
+    let dataItemArray = new Array<DataItem>();
+
+    ["-Select-", "India", "USA", "Japan", "United Kingdom", "Russia", "Canada"].forEach((countryName) => {
       var dataItem = new DataItem();
       dataItem.value = countryName;
       dataItem.isUsed = false;
       dataItem.Selected = false;
-      this.dataArr.col1.push({ ...dataItem });
-      this.dataArr.col2.push({ ...dataItem });
-      this.dataArr.col3.push({ ...dataItem });
-      this.dataArr.col4.push({ ...dataItem });
+      dataItemArray.push(dataItem);
+    });
+
+    this.columnDataArr = new Map<Number, Array<DataItem>>();
+    for (let index = 0; index < this.columnCount; index++) {
+      this.mainArr.push(index);
+      this.columnDataArr.set(index, deepClone(dataItemArray));
     }
+
   }
-  SetOther(value, indexArr) {
+  SetOther(value, indexArr, resetOther = false) {
     for (let index = 0; index < indexArr.length; index++) {//2,3,4
       const element = indexArr[index];
-      switch (element) {
-        case 1:
-          var itm = this.dataArr.col1.filter(x => x.value == value);//set index
-          if (itm) {
-            itm[0].isUsed = true;
-          }
-          break;
-        case 2:
-          var itm = this.dataArr.col2.filter(x => x.value == value);//set index
-          if (itm) {
-            itm[0].isUsed = true;
-          }
-          break;
-        case 3:
-          var itm = this.dataArr.col3.filter(x => x.value == value);//set index
-          if (itm) {
-            itm[0].isUsed = true;
-          }
-          break;
-        case 4:
-          var itm = this.dataArr.col4.filter(x => x.value == value);//set index
-          if (itm) {
-            itm[0].isUsed = true;
-          }
-          break;
-      }
+      const temp = Object.values(this.columnDataArr.get(element)).filter(x => x.value == value);
+      resetOther ? temp.map(x => { x.isUsed = false }) : temp.map(x => { x.isUsed = true, x.Selected = false; });
     }
   }
-  ChangeSelect(event, index) {
-    var row1 = this.dataArr.col1.filter(x => x.Selected && x.value != event);
-    if (row1 && row1.length) {
-      row1[0].Selected = false;//set al false
-      row1[0].isUsed = false;//set al false
-    } 
-    var row2 = this.dataArr.col2.filter(x => x.Selected && x.value != event);
-    if (row2 && row2.length) {
-      row2[0].Selected = false;//set al false
-      row2[0].isUsed = false;//set al false
+  getMainArr(index: number) {
+    var clonedMainArr = [...this.mainArr];
+    const remIndex = clonedMainArr.indexOf(index);
+    if (remIndex > -1) {
+      clonedMainArr.splice(remIndex, 1);
     }
-    var row3 = this.dataArr.col3.filter(x => x.Selected && x.value != event);
-    if (row3 && row3.length) {
-      row3[0].Selected = false;//set al false
-      row3[0].isUsed = false;//set al false
-    }
-    var row4 = this.dataArr.col4.filter(x => x.Selected && x.value != event);
-    if (row4 && row4.length) {
-      row4[0].Selected = false;//set al false
-      row4[0].isUsed = false;//set al false
+    return clonedMainArr;
+  }
+  ChangeSelect(selectedValue, index) {
+    var mainArr = this.getMainArr(index);
+
+    var preSelValue = this.preSelValue[index];
+    if (preSelValue) {
+      this.SetOther(preSelValue, mainArr, true);
     }
 
-    if (index == 1) {
-      // var selected = this.dataArr.col1.findIndex(x => x.Selected && x.value != event);
-      // if (selected>-1) {
-      //   this.dataArr.col1[selected].Selected = false;//set al false
-      //   this.dataArr.col1[selected].isUsed = false;//set al false
-      // }
-      var idx = this.dataArr.col1.findIndex(x => x.value == event);//set index
-      for (let index = 0; index < this.dataArr.col1.length; index++) {
-        if (index != idx) {
-          //this.dataArr.col1[index].isUsed = false;//set al false
-          //this.dataArr.col1[idx].Selected = false; 
-        } else {
-          this.dataArr.col1[idx].isUsed = true;//set al false
-          this.dataArr.col1[idx].Selected = true;//set al false
-        }
-      }
-      this.SetOther(event, [2, 3, 4]);
+    var itemArray = Object.values(this.columnDataArr.get(index));
+    this.preSelValue[index] = selectedValue;
+
+    //reset all other than current item
+    itemArray.filter(x => x.Selected && x.value != selectedValue).forEach((x) => {
+      x.Selected = false, x.isUsed = false;
+    });
+    itemArray.filter(x => x.value == selectedValue).forEach((x) => { //select self
+      x.Selected = true, x.isUsed = true;
+    });
+    const remIndex = itemArray.findIndex(x => x.value == "-Select-");//remove select from list
+    if (remIndex > -1) {
+      itemArray.splice(remIndex, 1);
+      this.columnDataArr.set(index, deepClone(itemArray));
     }
-    else if (index == 2) {
-      // var selected = this.dataArr.col2.findIndex(x => x.Selected && x.value != event);
-      // if (selected>-1) {
-      //   this.dataArr.col2[selected].Selected = false;//set al false
-      //   this.dataArr.col2[selected].isUsed = false;//set al false
-      // }
-      var idx = this.dataArr.col2.findIndex(x => x.value == event);//set index
-      for (let index = 0; index < this.dataArr.col2.length; index++) {
-        if (index != idx) {
-          //this.dataArr.col2[index].isUsed = false;//set al false
-          //this.dataArr.col2[idx].Selected = false; 
-
-        } else {
-          this.dataArr.col2[idx].isUsed = true;//set al false
-          this.dataArr.col2[idx].Selected = true;//set al false
-        }
-      }
-      this.SetOther(event, [1, 3, 4]);
-    } else if (index == 3) {
-      // var selected = this.dataArr.col3.findIndex(x => x.Selected && x.value != event);
-      // if (selected>-1) {
-      //   this.dataArr.col3[selected].Selected = false;//set al false
-      //   this.dataArr.col3[selected].isUsed = false;//set al false
-      // }
-      var idx = this.dataArr.col3.findIndex(x => x.value == event);//set index
-      for (let index = 0; index < this.dataArr.col3.length; index++) {
-        if (index != idx) {
-          //this.dataArr.col3[index].isUsed = false;//set al false
-          //this.dataArr.col3[idx].Selected = false; 
-
-        } else {
-          this.dataArr.col3[idx].isUsed = true;//set al false
-          this.dataArr.col3[idx].Selected = true;//set al false
-        }
-      }
-      this.SetOther(event, [1, 2, 4]);
-    } else if (index == 4) {
-      // var selected = this.dataArr.col4.findIndex(x => x.Selected && x.value != event);
-      // if (selected>-1) {
-      //   this.dataArr.col4[selected].Selected = false;//set al false
-      //   this.dataArr.col4[selected].isUsed = false;//set al false
-      // }
-      var idx = this.dataArr.col4.findIndex(x => x.value == event);//set index
-      for (let index = 0; index < this.dataArr.col4.length; index++) {
-        if (index != idx) {
-          //this.dataArr.col4[index].isUsed = false;//set al false
-          //this.dataArr.col4[idx].Selected = false; 
-
-        } else {
-          this.dataArr.col4[idx].isUsed = true;//set al false
-          this.dataArr.col4[idx].Selected = true;//set al false
-        }
-      }
-      this.SetOther(event, [1, 2, 3]);
-    }
+    this.SetOther(selectedValue, mainArr);//to reset the selected value in other drop-down
   }
   GetData(index) {
-    switch (index) {
-      case 1:
-        return [...this.dataArr.col1.filter(x => !x.isUsed), ...this.dataArr.col1.filter(x => x.Selected)]
-        break;
-      case 2:
-        return [...this.dataArr.col2.filter(x => !x.isUsed), ...this.dataArr.col2.filter(x => x.Selected)]
-        break;
-      case 3:
-        return [...this.dataArr.col3.filter(x => !x.isUsed), ...this.dataArr.col3.filter(x => x.Selected)]
-        break;
-      case 4:
-        return [...this.dataArr.col4.filter(x => !x.isUsed), ...this.dataArr.col4.filter(x => x.Selected)]
-        break;
+    if (index > this.columnDataArr.size - 1) {
+      return;
     }
+    var item = Object.values(this.columnDataArr.get(index));
+    return [...item.filter(x => x.Selected), ...item.filter(x => !x.isUsed)]
   }
 }
 
-export class DataArr {
-  public col1: Array<DataItem> = [];
-  public col2: Array<DataItem> = [];
-  public col3: Array<DataItem> = [];
-  public col4: Array<DataItem> = [];
-}
 export class DataItem {
   public value: string = "";
   public isUsed: boolean = false;
