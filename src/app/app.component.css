@@ -103,7 +103,10 @@ svg.material-icons {
   height: 16px;
   width: 168px;
 }
-
+.card.card-large {
+  height: 16px;
+  width: 800px;
+}
 .card-container .card:not(.highlight-card) {
   cursor: pointer;
 }
@@ -289,5 +292,5 @@ svg#clouds {
 
 
 .select {
-    width:250px;
+    min-width:250px;
 }

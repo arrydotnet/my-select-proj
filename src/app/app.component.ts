@@ -11,22 +11,26 @@ export class AppComponent implements OnInit {
   public columnDataArr: Map<Number, Array<DataItem>>;
   public mainArr: Array<Number> = [];
   readonly columnCount: number = 4;
+  public countries: string ;
   public preSelValue: Array<string> = [];
+  public arrCountry: Array<string> = [];
   ngOnInit(): void {
     this.loadData();
   }
   loadData() {
     this.mainArr = [];
-    //var arrCountry = new Array<string>("-Select-", "India", "USA", "JAPAN", "UK", "RUSSIA", "CANADA");
+    this.arrCountry= new Array<string>("-Select-", "India", "USA", "Japan", "United Kingdom", "Russia", "Canada");
     let dataItemArray = new Array<DataItem>();
 
-    ["-Select-", "India", "USA", "Japan", "United Kingdom", "Russia", "Canada"].forEach((countryName) => {
+    this.arrCountry.forEach((countryName) => {
       var dataItem = new DataItem();
       dataItem.value = countryName;
       dataItem.isUsed = false;
       dataItem.Selected = false;
       dataItemArray.push(dataItem);
     });
+
+    this.countries = this.arrCountry.filter(x => x != '-Select-').join(", ");
 
     this.columnDataArr = new Map<Number, Array<DataItem>>();
     for (let index = 0; index < this.columnCount; index++) {
