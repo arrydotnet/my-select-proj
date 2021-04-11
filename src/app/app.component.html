@@ -46,17 +46,33 @@
   Countries:<strong>[{{ countries}}]</strong>
 
 
+  <div *ngIf="countryitems" [formGroup]="searchFormGroup">
+    <div class="card-container" formArrayName="countryitems" *ngFor="let item of countryitems.controls; let i = index">
+      <div class="card card-large" [formGroupName]="i">
+        <select formControlName="country" class="select" id="sel1" (change)="ChangeSelect($event.target.value,i)">
+          <option *ngFor="let option of GetData(i)" [value]="option.value">
+            {{option.value}}
+          </option>
+        </select>
+      </div>
+    </div>
+  </div>
 
-  <div class="card-container">
+   
+
+
+
+
+  <!--<div class="card-container">
     <div class="card card-large">
       <select class="select" id="sel1" (change)="ChangeSelect($event.target.value,0)">
         <option *ngFor="let option of GetData(0)" [value]="option.value">
           {{option.value}}
         </option>
       </select>
-      <!--<p>
+      <p>
         Available: <ng-container *ngFor="let itm of GetData(0)">  {{itm.value}}   </ng-container>
-      </p>-->
+      </p>
     </div>
   </div>
   <div class="card-container">
@@ -66,11 +82,12 @@
           {{option.value          }}
         </option>
       </select>
-      <!--<span>
+      <span>
         Available: <ng-container *ngFor="let itm of GetData(1)">  {{itm.value}}   </ng-container>
-      </span>-->
+      </span>
     </div>
   </div>
+  <="
   <div class="card-container">
     <div class="card card-large">
       <select class="select" id="sel3" (change)="ChangeSelect($event.target.value,2)">
@@ -78,9 +95,9 @@
           {{option.value}}
         </option>
       </select>
-      <!--<p>
+      <p>
         Available: <ng-container *ngFor="let itm of GetData(2)">  {{itm.value}}   </ng-container>
-      </p>-->
+      </p>
     </div>
   </div>
   <div class="card-container">
@@ -90,11 +107,17 @@
           {{option.value}}
         </option>
       </select>
-      <!--<span>
+      <span>
         Available: <ng-container *ngFor="let itm of GetData(3)">  {{itm.value}}   </ng-container>
-      </span>-->
+      </span>
     </div>
-  </div>
+  </div>-->
+
+
+
+
+
+
 
 
 

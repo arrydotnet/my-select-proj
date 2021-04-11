@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { FormArray, FormBuilder, FormControl, FormGroup } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import { deepClone } from '../shared/utility';
 @Component({
   selector: 'app-root',
@@ -6,20 +8,55 @@ import { deepClone } from '../shared/utility';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
+  constructor(
+    public formBuilder: FormBuilder) {
+  }
   title = 'my-select-proj';
   //public dataArr = new DataArr();
   public columnDataArr: Map<Number, Array<DataItem>>;
   public mainArr: Array<Number> = [];
   readonly columnCount: number = 4;
-  public countries: string ;
+  public countries: string;
   public preSelValue: Array<string> = [];
   public arrCountry: Array<string> = [];
+  public searchFormGroup: FormGroup;
+  public countryitems: FormArray;
+
+  private sub = new Subscription();
+
   ngOnInit(): void {
     this.loadData();
+
+    this.searchFormGroup = this.formBuilder.group({
+      items: this.formBuilder.array(this.createItems())
+    });
+    this.countryitems = this.searchFormGroup.get('items') as FormArray;
+    this.sub.add(
+      this.searchFormGroup.valueChanges.subscribe(item => {
+        if (item) {
+          this.retrieveFieldDataItem(item);
+        }
+      }));
+
+  }
+  private retrieveFieldDataItem(data: any) {
+    console.log(data);
+  }
+
+  private createItems(): FormGroup[] {
+    const formGroupArr: FormGroup[] = [];
+    for (var i = 0; i < this.columnDataArr.size; i++) {
+      formGroupArr.push(
+        this.formBuilder.group({
+          country: new FormControl({ value: '' })
+        }));
+    }
+     
+    return formGroupArr;
   }
   loadData() {
     this.mainArr = [];
-    this.arrCountry= new Array<string>("-Select-", "India", "USA", "Japan", "United Kingdom", "Russia", "Canada");
+    this.arrCountry = new Array<string>("-Select-", "India", "USA", "Japan", "United Kingdom", "Russia", "Canada");
     let dataItemArray = new Array<DataItem>();
 
     this.arrCountry.forEach((countryName) => {
