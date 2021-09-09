@@ -1,4 +1,5 @@
-# MySelectProj
+# 
+![MySelectProj](https://github.com/arrydotnet/my-select-proj/blob/main/arry-select-project.gif)
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 11.2.0.
 
